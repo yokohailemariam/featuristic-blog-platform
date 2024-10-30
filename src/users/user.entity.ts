@@ -58,7 +58,11 @@ export class User {
   })
   email: string;
 
-  @Column({ length: 255, nullable: true, select: false })
+  @IsBoolean()
+  @Column({ type: 'boolean', default: false })
+  isEmailVerified?: boolean;
+
+  @Column({ length: 255, nullable: true })
   password?: string;
 
   @IsOptional()

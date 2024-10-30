@@ -23,10 +23,12 @@ export class UsersService {
   ) {}
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
-    // Check if username or email already exists
     const existingUser = await this.userRepository.findOne({
-      where: [{ email: createUserDto.email }],
+      where: [{ email: createUserDto.email.toLowerCase() }],
     });
+
+    const baseUsername = createUserDto.email.split('@')[0];
+    const username = await this.generateUniqueUsername(baseUsername);
 
     if (existingUser) {
       throw new ConflictException('Email already exists');
@@ -42,6 +44,7 @@ export class UsersService {
 
     const user = this.userRepository.create({
       ...createUserDto,
+      username,
       password: hashedPassword,
       role: UserRole.USER,
       isVerified: false,
@@ -51,23 +54,26 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.userRepository.findOne({
-      where: { username },
+  async findOne(email: string) {
+    return this.userRepository.findOne({
+      where: { email: email.toLowerCase() },
     });
+  }
 
-    if (!user) {
-      throw new Error('User not found');
+  async generateUniqueUsername(baseName: string): Promise<string> {
+    let username = baseName;
+    let suffix = 1;
+
+    while (await this.usernameTaken(username)) {
+      username = `${baseName}${suffix}`;
+      suffix++;
     }
 
-    const decryptedPassword = await bcrypt.compare(pass, user.password);
+    return username.toLowerCase();
+  }
 
-    if (!decryptedPassword) {
-      throw new Error('Invalid password');
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = user;
-    return result;
+  private async usernameTaken(username: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({ where: { username } });
+    return !!user;
   }
 }

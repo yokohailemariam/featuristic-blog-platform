@@ -58,4 +58,25 @@ export class AuthService {
 
     return null;
   }
+
+  async validateOAuthLogin(email: string, displayName: string): Promise<any> {
+    const user = await this.usersService.findOne(email);
+
+    if (user) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...result } = user;
+      return result;
+    }
+
+    console.log('user not found, creating new user');
+
+    const newUser = await this.usersService.createUser({
+      email,
+      name: displayName,
+      password: Math.random().toString(36).slice(-8),
+    });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...result } = newUser;
+    return result;
+  }
 }

@@ -60,6 +60,10 @@ export class UsersService {
     });
   }
 
+  async findById(id: string) {
+    return this.userRepository.findOne({ where: { id } });
+  }
+
   async generateUniqueUsername(baseName: string): Promise<string> {
     let username = baseName;
     let suffix = 1;

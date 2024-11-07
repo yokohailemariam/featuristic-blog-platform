@@ -23,13 +23,7 @@ import {
 } from 'class-validator';
 import { Revision } from 'src/revisions/revision.entity';
 import { Series } from 'src/series/series.entity';
-
-export enum UserRole {
-  USER = 'user',
-  AUTHOR = 'author',
-  EDITOR = 'editor',
-  ADMIN = 'admin',
-}
+import { UserRole } from 'src/types';
 
 @Entity()
 export class User {

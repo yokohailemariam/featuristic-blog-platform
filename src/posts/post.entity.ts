@@ -19,21 +19,7 @@ import { Tag } from 'src/tags/tag.entity';
 import { Category } from 'src/categories/category.entity';
 import { Series } from 'src/series/series.entity'; // New Series entity
 import { Revision } from 'src/revisions/revision.entity'; // New Revision entity
-
-export enum PostStatus {
-  DRAFT = 'draft',
-  REVIEW = 'review',
-  SCHEDULED = 'scheduled',
-  PUBLISHED = 'published',
-  ARCHIVED = 'archived',
-}
-
-export enum PostType {
-  ARTICLE = 'article',
-  NEWS = 'news',
-  TUTORIAL = 'tutorial',
-  REVIEW = 'review',
-}
+import { PostStatus, PostType } from 'src/types';
 
 @Entity()
 @Index(['title', 'content'])

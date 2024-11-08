@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../users/user.entity';
 import slugify from 'slugify';
 import { Post } from './post.entity';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -166,10 +165,10 @@ export class PostsService {
     return this.postRepository.save(post);
   }
 
-  async remove(id: number, user: User): Promise<void> {
+  async remove(id: number, user: UserRequest): Promise<void> {
     const post = await this.findOne(id);
 
-    if (post.author.id !== user.id) {
+    if (post.author.id !== user.userId) {
       throw new BadRequestException('You can only delete your own posts');
     }
 
@@ -224,6 +223,62 @@ export class PostsService {
     }
   }
 
+  async getLikedPosts(
+    userId: string,
+    query: { page?: number; limit?: number },
+  ) {
+    const page = parseInt(query.page as any, 10) || 1;
+    const limit = parseInt(query.limit as any, 10) || 10;
+
+    if (isNaN(page) || isNaN(limit)) {
+      throw new BadRequestException('Page and limit must be valid numbers');
+    }
+
+    const queryBuilder = this.postRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.author', 'author')
+      .where('CAST(post.likedBy AS JSONB) @> :userId', {
+        userId: JSON.stringify([userId]),
+      })
+      .orderBy('post.createdAt', 'DESC');
+
+    // Get total count
+    const totalItems = await queryBuilder.getCount();
+    const totalPages = Math.ceil(totalItems / limit);
+
+    // Validate page number
+    if (page > totalPages && totalItems > 0) {
+      throw new NotFoundException(
+        `Page ${page} not found. Total pages: ${totalPages}`,
+      );
+    }
+
+    // Get paginated results
+    const data = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
+
+    return {
+      posts: data.map(({ author, ...post }) => ({
+        ...post,
+        author: {
+          id: author.id,
+          username: author.username,
+          name: author.name,
+          avatar: author.avatar,
+        },
+      })),
+      meta: {
+        currentPage: page,
+        itemsPerPage: limit,
+        totalItems,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    };
+  }
   private async generateUniqueSlug(title: string): Promise<string> {
     const slug = slugify(title, { lower: true, strict: true });
     let counter = 0;

@@ -31,7 +31,7 @@ import { AuthModule } from './auth/auth.module';
       database: process.env.DBNAME,
       entities: [Category, Comment, Post, Revision, Series, Tag, User],
       autoLoadEntities: true,
-      logging: true,
+      logging: false,
       synchronize: true,
     }),
     CategoriesModule,

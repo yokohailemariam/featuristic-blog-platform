@@ -30,6 +30,11 @@ export class PostsController {
     return this.postService.findAll(query);
   }
 
+  @Get('liked')
+  getLikedPosts(@Request() req, @Query() query) {
+    return this.postService.getLikedPosts(req.user.userId, query);
+  }
+
   @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {

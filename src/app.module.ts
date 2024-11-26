@@ -26,7 +26,7 @@ import { AuthModule } from './auth/auth.module';
       type: 'postgres',
       host: process.env.DBHOST,
       port: parseInt(process.env.DBPORT) || 5432,
-      username: process.env.DBUSER,
+      username: process.env.DBUSERNAME,
       password: process.env.DBPASSWORD,
       database: process.env.DBNAME,
       entities: [Category, Comment, Post, Revision, Series, Tag, User],
